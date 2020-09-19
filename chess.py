@@ -328,7 +328,7 @@ class King(Chess):
     def validate(self,loc):
         i,j=self.getPosition()
         x,y=loc
-        if not self.issameTeam(board[x][y]) and (loc in self.bounds) and self.isUnderThreat(x, y, self):
+        if not self.issameTeam(board[x][y]) and (loc in self.bounds) and not self.isUnderThreat(x, y, self):
             return True
         return False
     
