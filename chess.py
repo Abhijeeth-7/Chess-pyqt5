@@ -244,8 +244,6 @@ class Game(Chess):
             for j in range(1,9):
                 if board[i][j]!=None:
                     board[i][j].updateBounds(board[i][j].bounds)
-                    if board[i][j].image=='king':
-                        print(board[i][j].bounds)
         
     def setUpPngs(self):
         for i in range(1,9):
