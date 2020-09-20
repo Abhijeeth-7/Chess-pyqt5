@@ -12,58 +12,7 @@ board=[[None for j in range(9)]for i in range(9)]
 class Chess:
     team=1
     checked=''
-
-    def isUnderCheck(self,team):
-        threats = list()
-        check = False
-        king = self.kings[team-1]
-        
-        for x,y in king.bounds:
-            if (x,y)!=king.getPosition():
-                threats.append(self.isUnderThreat(x,y,king))
-            else:
-                threats.append(0)
-            
-        for i in range(len(threats)):
-            if board[king.bounds[i][0]][king.bounds[i][1]]==None and threats[i]==1:
-                check = True
-                
-        if check:#and not self.canEscape(threats,king):
-            king.check = True
-        else:
-            king.check = False
-        return check
-        
-    def isUnderThreat(self,x,y,king):
-        row_bound, col_bound = x, y
-        i,j = king.getPosition()
-        row_inc = x-i
-        col_inc = y-j
-        x, y = i, j
-        
-        while king.inBounds(x+row_inc,y+col_inc) and (board[x][y]==None or (x,y)==(i,j)):
-            x, y = x+row_inc, y+col_inc
-            
-        if board[x][y]!=None and board[x][y].team!=king.team:
-            if board[x][y].inRange((row_bound,col_bound),board[x][y].bounds):
-                return 1
-        return 0
-    
-    def changeColor(self,Flag):
-        if Flag:
-            ui_board[self.i][self.j].setStyleSheet("background-color: rgb(217, 61, 26)")
-        else:
-            if self.i%2==1:
-                if self.j%2==1:
-                    ui_board[self.i][self.j].setStyleSheet("background-color: rgb(153, 92, 7);")
-                else:
-                    ui_board[self.i][self.j].setStyleSheet("background-color: rgb(255, 217, 151);")
-            else:
-                if self.j%2==0:
-                    ui_board[self.i][self.j].setStyleSheet("background-color: rgb(153, 92, 7);")
-                else:
-                    ui_board[self.i][self.j].setStyleSheet("background-color: rgb(255, 217, 151);")    
-            
+  
     def setPosition(self,loc):
         # print("position updated:")
         self.i=loc[0]
@@ -200,6 +149,53 @@ class Chess:
     #         ui_board[9-i][j].setPixmap(QPixmap("imgs/blank.png"))
     #         ui_board[i][j].setPixmap(QPixmap("imgs/blank.png"))
     
+    # def isUnderCheck(self,x,y):
+    #     threats = list()
+    #     check = False
+    #     king = board[x][y]
+    #     print("king at :",x,y,flush=True)
+    #     for x,y in king.bounds:
+    #         if (x,y)!=king.getPosition():
+    #             threats.append(self.isUnderThreat(x,y,king))
+    #         else:
+    #             threats.append(0)           
+    #     for i in range(len(threats)):
+    #         if board[king.bounds[i][0]][king.bounds[i][1]]==None and threats[i]==1:
+    #             check = True            
+    #     if check:#and not self.canEscape(threats,king):
+    #         king.check = True
+    #     else:
+    #         king.check = False
+    #     return check
+        
+    # def isUnderThreat(self,x,y,king):
+    #     row_bound, col_bound = x, y
+    #     i,j = king.getPosition()
+    #     row_inc = x-i
+    #     col_inc = y-j
+    #     x, y = i, j      
+    #     while king.inBounds(x+row_inc,y+col_inc) and (board[x][y]==None or (x,y)==(i,j)):
+    #         x, y = x+row_inc, y+col_inc           
+    #     if board[x][y]!=None and board[x][y].team!=king.team:
+    #         if board[x][y].inRange((row_bound,col_bound),board[x][y].bounds):
+    #             return 1
+    #     return 0
+    
+    # def changeColor(self,Flag,x,y,px,py):
+    #     if Flag:
+    #         ui_board[x][y].setStyleSheet("background-color: rgb(217, 61, 26)")
+    #     else:
+    #         if self.i%2==1:
+    #             if self.j%2==1:
+    #                 ui_board[x][y].setStyleSheet("background-color: rgb(153, 92, 7);")
+    #             else:
+    #                 ui_board[x][y].setStyleSheet("background-color: rgb(255, 217, 151);")
+    #         else:
+    #             if self.j%2==0:
+    #                 ui_board[x][y].setStyleSheet("background-color: rgb(153, 92, 7);")
+    #             else:
+    #                 ui_board[x][y].setStyleSheet("background-color: rgb(255, 217, 151);")  
+    
 class Game(Chess):
     
     def __init__(self,ui_obj,ui_b):
@@ -207,7 +203,8 @@ class Game(Chess):
         locs= list()
         ui = ui_obj
         ui_board = ui_b
-        self.kings = None
+        self.kx = list()
+        self.ky = list()
         self.setUpBoard()
         self.setUpPngs()
         
@@ -236,7 +233,8 @@ class Game(Chess):
         black_queen=Queen(1,5,2)
         self.white_king=King(8,5,1)
         self.black_king=King(1,4,2)
-        self.kings = [self.white_king, self.black_king]
+        self.kx += [8,1]
+        self.ky += [5,4]
         board[1] = [None,black_rook[0],black_knight[0],black_bishop[0],self.black_king,black_queen,black_bishop[1],black_knight[1],black_rook[1]]
         board[2] = black_pawn
         board[7] = white_pawn
@@ -246,6 +244,8 @@ class Game(Chess):
             for j in range(1,9):
                 if board[i][j]!=None:
                     board[i][j].updateBounds(board[i][j].bounds)
+                    if board[i][j].image=='king':
+                        print(board[i][j].bounds)
         
     def setUpPngs(self):
         for i in range(1,9):
@@ -280,8 +280,6 @@ class Game(Chess):
             board[x2][y2].updateBounds(board[x2][y2].bounds)
             ui_board[x2][y2].setPixmap(QPixmap("imgs/"+board[x2][y2].image+str(board[x2][y2].team)+".png"))
             ui_board[x1][y1].setPixmap(QPixmap("imgs/blank.png"))
-            self.kings[2-team//2-1].changeColor(self.isUnderCheck(2-team//2))
-            self.kings[team-1].changeColor(self.isUnderCheck(team))
             return True
         return False
        
@@ -326,18 +324,19 @@ class King(Chess):
         self.bounds = [0]*8
         
     def validate(self,loc):
-        i,j=self.getPosition()
         x,y=loc
         if not self.issameTeam(board[x][y]) and (loc in self.bounds):
             return True
         return False
     
     def updateBounds(self,bounds):
+        self.i,self.j=self.getPosition()
         x,y=self.i,self.j
-        self.bounds = [(x+1,y+1),(x-1,y-1),(x+1,y-1),(x-1,y+1),(x,y+1),(x,y-1),(x+1,y),(x-1,y)]
+        bounds.clear()
+        bounds += [(x+1,y+1),(x-1,y-1),(x+1,y-1),(x-1,y+1),(x,y+1),(x,y-1),(x+1,y),(x-1,y)]
         for i in range(8):
-            if not self.inBounds(self.bounds[i][0], self.bounds[i][1]):
-                self.bounds[i]=(self.i,self.j)
+            if not self.inBounds(bounds[i][0], bounds[i][1]):
+                bounds[i]=(x,y)
     
 class Queen(Chess):    
     def __init__(self,row,col,team):
