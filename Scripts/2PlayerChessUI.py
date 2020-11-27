@@ -1288,7 +1288,7 @@ class ClockThread(threading.Thread):
             self.status_label.setText("Black WON!")
         if self.player == "Black":
             self.status_label.setText("White WON!")
-        time.sleep(0)
+        time.sleep(2.5)
         self.mainwin.close()
 
 
