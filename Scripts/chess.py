@@ -5,7 +5,7 @@ Created on Thu Sep  3 08:19:09 2020
 @author: kanch
 """
 from PyQt5.QtGui import QPixmap
-import copy
+from copy import copy
 from math import sqrt
 board=[[None for j in range(9)]for i in range(9)]
     
@@ -35,13 +35,12 @@ class Chess:
     
     def inRange(self,newloc,bounds):
         if self.image=='pawn':
-            print(bounds,"newloc:",newloc)
             return (newloc in bounds)
-        for i in range(0,len(bounds)//2+1,2):
-            total_dist = sqrt((bounds[i][0]-bounds[i+1][0])**2+(bounds[i][1]-bounds[i+1][1])**2)
-            dist1 = sqrt((bounds[i][0]-newloc[0])**2+(bounds[i][1]-newloc[1])**2)
-            dist2 = sqrt((bounds[i+1][0]-newloc[0])**2+(bounds[i+1][1]-newloc[1])**2)
-            if (total_dist*100)//1 == ((dist1+dist2)*100)//1:
+        for i in range(0,len(bounds),2):
+            total_dist = sqrt((bounds[i][0]*10-bounds[i+1][0]*10)**2+(bounds[i][1]*10-bounds[i+1][1]*10)**2)
+            dist1 = sqrt((bounds[i][0]*10-newloc[0]*10)**2+(bounds[i][1]*10-newloc[1]*10)**2)
+            dist2 = sqrt((bounds[i+1][0]*10-newloc[0]*10)**2+(bounds[i+1][1]*10-newloc[1]*10)**2)
+            if (total_dist*100)//1 == ((dist1+dist2)*100//1):
                 return True
         return False
         
@@ -123,18 +122,19 @@ class Chess:
         if self.inBounds(i,j) and self.issameTeam(board[i][j]): j=j-1
         bounds.append((i,j))
    
-    # def canEscape(self,threats,king):
-    #     bounds = king.bounds
-    #     result = False
-    #     for i in range(len(threats)):
-    #         if threats[i]==0 and bounds[i]!=king.getPosition():
-    #             obj = board[bounds[i][0]][bounds[i][1]]
-    #             if obj!=None and obj.team == self.team:
-    #                 result = result or False
-    #                 continue
-    #             result = result or True 
-    #     return result
-       
+    """
+    def canEscape(self,threats,king):
+        bounds = king.bounds
+        result = False
+        for i in range(len(threats)):
+            if threats[i]==0 and bounds[i]!=king.getPosition():
+                obj = board[bounds[i][0]][bounds[i][1]]
+                if obj!=None and obj.team == self.team:
+                    result = result or False
+                    continue
+                result = result or True 
+        return result
+     """  
     
     def changeColor(self,Flag,x,y):
         if Flag:
@@ -172,11 +172,12 @@ class Chess:
                     Threat = True
                     break
 
-        if not Threat:
+        if Threat == False:
             #checking for threats in kings path    
             for bx,by in king.bounds:
                 if (bx,by)!=king.getPosition():
                     if self.isUnderThreat(bx,by,king):
+                        print("True")
                         Threat = True
                         break
         
@@ -210,11 +211,12 @@ class Chess:
             
             #updating the bounds of the object to avoid anamolies
             board[x][y].updateBounds(board[x][y].bounds)
-            if board[x][y].inRange((king_rbound,king_cbound),board[x][y].bounds):
+            print("threat from ",board[x][y].image,"at ",board[x][y].getPosition(),board[x][y].inRange((king_rbound,king_cbound),board[x][y].bounds))
+            print(board[x][y].bounds)
+            if board[x][y].inRange(king.getPosition(),board[x][y].bounds):
+                print("threat from ",board[x][y].image,"at ",board[x][y].getPosition())
                 return True
         return False
-    
-    
     
 class Game(Chess):
     
@@ -290,19 +292,17 @@ class Game(Chess):
     
     def captureClicks(self,objname,team):
         x,y=int(objname[1]),int(objname[2])
-        if board[x][y]!=None:
-            if team ==1:
-                print("clikced on white",board[x][y].image,"\t team:",team)
-                if locs==[] and board[x][y].team!=1:
-                    return False
-            else:
-                print("clikced on black",board[x][y].image,"\t team:",team)
-                if locs==[] and board[x][y].team!=2:
-                    return False
-            board[x][y].updateBounds(board[x][y].bounds)
-            
+        
         if len(locs)==2:
             locs.clear()
+        
+        if locs==[]:
+            if board[x][y]==None: return False
+            elif board[x][y].team!=team: return False
+        
+        if board[x][y]!=None:
+                board[x][y].updateBounds(board[x][y].bounds)
+            
         if locs==[] and  board[x][y]!=None:
             locs.append((x,y))
         elif len(locs)==1 and locs[0]!=(x,y):
@@ -328,7 +328,7 @@ class Game(Chess):
                 self.kx[team-1],self.ky[team-1]=(x2,y2)
             
             #perform the move on logic board(backend board)
-            board[x2][y2] = copy.copy(board[x1][y1])
+            board[x2][y2] = copy(board[x1][y1])
             board[x2][y2].setPosition((x2,y2))
             board[x2][y2].updateBounds(board[x2][y2].bounds)
             board[x1][y1] = None
@@ -497,4 +497,3 @@ class Pawn(Chess):
             
         if self.inBounds(x+k,y-k) and board[x+k][y-k]!=None and not self.issameTeam(board[x+k][y-k]):
             self.bounds+=[(x+k,y-k)]
-        print(self.bounds)
