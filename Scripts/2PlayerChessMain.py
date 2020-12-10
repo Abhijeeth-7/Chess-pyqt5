@@ -1307,7 +1307,11 @@ class ClockThread(Thread):
             self.status_label.setText("Black WON!")
         if self.player == "Black":
             self.status_label.setText("White WON!")
+<<<<<<< HEAD:Scripts/2PlayerChessMain.py
         sleep(2)
+=======
+        time.sleep(2.5)
+>>>>>>> 56051e304f45aee6f11ccc0c77e79013a4271ff8:Scripts/2PlayerChessUI.py
         self.mainwin.close()
 
 
