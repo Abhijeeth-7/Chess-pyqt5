@@ -1,4 +1,4 @@
-# 2_Player_Chess
+# Chess game using python and pyqt5
 This is a desktop App for an offline Two player chess game.
 Developed using Python and pyQt5.
 To Run this App on your desktop:
